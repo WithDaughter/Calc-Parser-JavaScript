@@ -36,45 +36,53 @@ class Lexer {
     }
 }
 
-const factor = lexer => {
-    if (lexer.peekToken() === '(') {
-        lexer.getToken()
-        const exp = expression(lexer)
-        lexer.getToken()
-        return exp
+class Parser {
+    constructor(exp) {
+        this.lexer = new Lexer(exp)
     }
-    return lexer.getToken()
-}
-const term = lexer => {
-    let left = factor(lexer)
-    while (lexer.peekToken() === '*' || lexer.peekToken() === '/') {
-        const op = lexer.getToken()
-        if (op === '*')
-            left *= factor(lexer)
-        else if (op === '/')
-            left /= factor(lexer)
+
+    factor(){
+        if (this.lexer.peekToken() === '(') {
+            this.lexer.getToken()
+            const exp = this.expression()
+            this.lexer.getToken()
+            return exp
+        }
+        return this.lexer.getToken()
     }
-    return left
-}
-const expression = lexer => {
-    let left = term(lexer)
-    while (lexer.peekToken() === '+' || lexer.peekToken() === '-') {
-        const op = lexer.getToken()
-        if (op === '+')
-            left += term(lexer)
-        else if (op === '-')
-            left -= term(lexer)
+
+    term() {
+        let left = this.factor()
+        while (this.lexer.peekToken() === '*' || this.lexer.peekToken() === '/') {
+            const op = this.lexer.getToken()
+            if (op === '*')
+                left *= this.factor()
+            else if (op === '/')
+                left /= this.factor()
+        }
+        return left
     }
-    return left
+
+    expression() {
+        let left = this.term()
+        while (this.lexer.peekToken() === '+' || this.lexer.peekToken() === '-') {
+            const op = this.lexer.getToken()
+            if (op === '+')
+                left += this.term()
+            else if (op === '-')
+                left -= this.term()
+        }
+        return left
+    }
 }
 
-const parser = exp => {
-    const lexer = new Lexer(exp)
-    return expression(lexer)
+const calc = exp => {
+    const parser = new Parser(exp)
+    return parser.expression()
 }
 
 ;(_ => {
-    const exp = '1-(2-4)*3'
-    const value = parser(exp)
+    const exp = '1-(2-((2*2 -1) +1))*3'
+    const value = calc(exp)
     log(value)
 })()
