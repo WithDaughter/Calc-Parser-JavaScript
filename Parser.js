@@ -39,9 +39,12 @@ const parser = exp => {
     const factor = _ => lexer.getToken()
     const expression = _ => {
         let left = factor()
-        while (lexer.peekToken() === '+') {
-            lexer.getToken()
-            left += factor()
+        while (lexer.peekToken() === '+' || lexer.peekToken() === '-') {
+            const op = lexer.getToken()
+            if (op === '+')
+                left += factor()
+            else if (op === '-')
+                left -= factor()
         }
         return left
     }
@@ -50,7 +53,7 @@ const parser = exp => {
 }
 
 ;(_ => {
-    const exp = '\t 1 \n + 2+3'
+    const exp = '\t 1 \n - 2-3-4'
     const value = parser(exp)
     log(value)
 })()
