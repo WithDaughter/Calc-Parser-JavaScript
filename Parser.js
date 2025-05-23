@@ -15,6 +15,8 @@ class Lexer {
                 case ')':
                 case '+':
                 case '-':
+                case '*':
+                case '/':
                     tokens.push(ch)
                     break
                 default:
@@ -37,14 +39,25 @@ class Lexer {
 const parser = exp => {
     const lexer = new Lexer(exp)
     const factor = _ => lexer.getToken()
-    const expression = _ => {
+    const term = _ => {
         let left = factor()
+        while (lexer.peekToken() === '*' || lexer.peekToken() === '/') {
+            const op = lexer.getToken()
+            if (op === '*')
+                left *= factor()
+            else if (op === '/')
+                left /= factor()
+        }
+        return left
+    }
+    const expression = _ => {
+        let left = term()
         while (lexer.peekToken() === '+' || lexer.peekToken() === '-') {
             const op = lexer.getToken()
             if (op === '+')
-                left += factor()
+                left += term()
             else if (op === '-')
-                left -= factor()
+                left -= term()
         }
         return left
     }
@@ -53,7 +66,7 @@ const parser = exp => {
 }
 
 ;(_ => {
-    const exp = '\t 1 \n - 2-3-4'
+    const exp = '1-2-4*3'
     const value = parser(exp)
     log(value)
 })()
