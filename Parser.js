@@ -62,7 +62,12 @@ class Parser {
             this.lexer.getToken()
             return exp
         }
-        return this.lexer.getToken()
+        if (this.lexer.peekToken() === '-') {
+            this.lexer.getToken()
+            return -(this.lexer.getToken())
+        }
+        else
+            return this.lexer.getToken()
     }
 
     term() {
@@ -96,7 +101,7 @@ const calc = exp => {
 }
 
 ;(_ => {
-    const exp = '1.123*3'
+    const exp = '2--3'
     const value = calc(exp)
     log(value)
 })()
