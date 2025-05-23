@@ -18,17 +18,25 @@ class Lexer {
                 case ')':
                 case '+':
                 case '-':
-                case '*':
                 case '/':
                     tokens.push(ch)
+                    break
+                case '*':
+                    if (exp[cur] === '*') {
+                        cur++
+                        tokens.push('**')
+                    } else
+                        tokens.push(ch)
                     break
                 default:
                     if (isNum(ch)) {
                         let num = ch
                         while (isNum(exp[cur]))
                             num += exp[cur++]
-                        if (exp[cur] !== '.')
+                        if (exp[cur] !== '.') {
                             tokens.push(Number(num))
+                            break
+                        }
                         num += exp[cur++]
                         while (isNum(exp[cur]))
                             num += exp[cur++]
@@ -65,19 +73,27 @@ class Parser {
         if (this.lexer.peekToken() === '-') {
             this.lexer.getToken()
             return -(this.lexer.getToken())
-        }
-        else
+        } else
             return this.lexer.getToken()
     }
 
-    term() {
+    secondary() {
         let left = this.factor()
+        while (this.lexer.peekToken() === '**') {
+            this.lexer.getToken()
+            left = Math.pow(left, this.factor())
+        }
+        return left
+    }
+
+    term() {
+        let left = this.secondary()
         while (this.lexer.peekToken() === '*' || this.lexer.peekToken() === '/') {
             const op = this.lexer.getToken()
             if (op === '*')
-                left *= this.factor()
+                left *= this.secondary()
             else if (op === '/')
-                left /= this.factor()
+                left /= this.secondary()
         }
         return left
     }
@@ -101,7 +117,7 @@ const calc = exp => {
 }
 
 ;(_ => {
-    const exp = '2--3'
+    const exp = '2**3*2**3'
     const value = calc(exp)
     log(value)
 })()
