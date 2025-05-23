@@ -7,8 +7,11 @@ class Lexer {
     }
 
     tokenize(exp) {
+        const isNum = ch => ch >= '0' && ch <= '9'
         const tokens = []
-        for (const ch of exp) {
+        let cur = 0
+        while (cur < exp.length) {
+            let ch = exp[cur++]
             if (/\s/.test(ch)) continue;
             switch (ch) {
                 case '(':
@@ -20,7 +23,18 @@ class Lexer {
                     tokens.push(ch)
                     break
                 default:
-                    tokens.push(Number(ch))
+                    if (isNum(ch)) {
+                        let num = ch
+                        while (isNum(exp[cur]))
+                            num += exp[cur++]
+                        if (exp[cur] !== '.')
+                            tokens.push(Number(num))
+                        num += exp[cur++]
+                        while (isNum(exp[cur]))
+                            num += exp[cur++]
+                        tokens.push(Number(num))
+                    } else
+                        throw new Error(`${ch} is not a number`)
                     break
             }
         }
@@ -82,7 +96,7 @@ const calc = exp => {
 }
 
 ;(_ => {
-    const exp = '1-(2-((2*2 -1) +1))*3'
+    const exp = '1.123*3'
     const value = calc(exp)
     log(value)
 })()
