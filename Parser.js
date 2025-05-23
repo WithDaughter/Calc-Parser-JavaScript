@@ -16,8 +16,10 @@ class Lexer {
                 case '+':
                 case '-':
                     tokens.push(ch)
+                    break
                 default:
-                    tokens.push(ch)
+                    tokens.push(Number(ch))
+                    break
             }
         }
         return tokens
@@ -34,11 +36,21 @@ class Lexer {
 
 const parser = exp => {
     const lexer = new Lexer(exp)
-    return exp
+    const factor = _ => lexer.getToken()
+    const expression = _ => {
+        let left = factor()
+        while (lexer.peekToken() === '+') {
+            lexer.getToken()
+            left += factor()
+        }
+        return left
+    }
+
+    return expression(lexer)
 }
 
 ;(_ => {
-    const exp = '\t 1 \n + 2'
+    const exp = '\t 1 \n + 2+3'
     const value = parser(exp)
     log(value)
 })()
