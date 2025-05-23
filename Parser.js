@@ -36,37 +36,45 @@ class Lexer {
     }
 }
 
+const factor = lexer => {
+    if (lexer.peekToken() === '(') {
+        lexer.getToken()
+        const exp = expression(lexer)
+        lexer.getToken()
+        return exp
+    }
+    return lexer.getToken()
+}
+const term = lexer => {
+    let left = factor(lexer)
+    while (lexer.peekToken() === '*' || lexer.peekToken() === '/') {
+        const op = lexer.getToken()
+        if (op === '*')
+            left *= factor(lexer)
+        else if (op === '/')
+            left /= factor(lexer)
+    }
+    return left
+}
+const expression = lexer => {
+    let left = term(lexer)
+    while (lexer.peekToken() === '+' || lexer.peekToken() === '-') {
+        const op = lexer.getToken()
+        if (op === '+')
+            left += term(lexer)
+        else if (op === '-')
+            left -= term(lexer)
+    }
+    return left
+}
+
 const parser = exp => {
     const lexer = new Lexer(exp)
-    const factor = _ => lexer.getToken()
-    const term = _ => {
-        let left = factor()
-        while (lexer.peekToken() === '*' || lexer.peekToken() === '/') {
-            const op = lexer.getToken()
-            if (op === '*')
-                left *= factor()
-            else if (op === '/')
-                left /= factor()
-        }
-        return left
-    }
-    const expression = _ => {
-        let left = term()
-        while (lexer.peekToken() === '+' || lexer.peekToken() === '-') {
-            const op = lexer.getToken()
-            if (op === '+')
-                left += term()
-            else if (op === '-')
-                left -= term()
-        }
-        return left
-    }
-
     return expression(lexer)
 }
 
 ;(_ => {
-    const exp = '1-2-4*3'
+    const exp = '1-(2-4)*3'
     const value = parser(exp)
     log(value)
 })()
